@@ -1,7 +1,7 @@
 ---
 // Seção "Presença no Google e nas IAs" (14/11/2026, versão 3: chat animado).
 // Uma janela de chat de IA responde sozinha a pergunta de um cliente. Na aba "Hoje" o negócio do
-// visitante não aparece; na aba "Com a VN Bueno" ele aparece em destaque. O visitante não sai do site.
+// visitante não aparece; na aba "Com a VN Bueno" ele passa a aparecer na lista (sem prometer posição). O visitante não sai do site.
 // É uma simulação: nomes fictícios e aviso visível. Promessa: trabalho e medição mensal, nunca "garantimos aparecer".
 // Sem atributo style no HTML (a CSP bloqueia). Dados vão num atributo data-* e o script é externo.
 import { linkWhatsApp } from '../data/site';
@@ -184,11 +184,10 @@ const camadas = [
       return item(li);
     };
 
-    const destaque = (nome: string) => {
-      const li = el('li', 'rounded-xl border border-violet-400/60 bg-gradient-to-r from-blue-500/20 to-violet-500/20 px-3.5 py-3 text-sm text-white shadow-[0_0_30px_-8px_rgb(139_92_246/0.8)]');
-      const topo = el('div', 'flex items-center gap-3');
-      topo.append(el('span', 'text-violet-300', '1.'), el('strong', 'font-semibold', nome), el('span', 'ml-auto rounded-full bg-emerald-400/15 px-2 py-0.5 text-[0.7rem] font-semibold text-emerald-300', 'Recomendado'));
-      li.append(topo, el('p', 'mt-1.5 pl-6 text-xs leading-relaxed text-slate-300', 'Site com informações claras, perfil no Google completo e boas avaliações de clientes.'));
+    // O negócio do visitante entra na lista entre os outros, sem prometer primeiro lugar.
+    const voceNaLista = (n: number, nome: string) => {
+      const li = el('li', 'flex items-center gap-3 rounded-xl border border-emerald-400/40 bg-emerald-500/[0.08] px-3.5 py-2.5 text-sm text-white');
+      li.append(el('span', 'text-slate-500', `${n}.`), el('strong', 'font-semibold', nome), el('span', 'ml-auto rounded-full bg-emerald-400/15 px-2 py-0.5 text-[0.7rem] font-semibold text-emerald-300', 'Você'));
       return item(li);
     };
 
@@ -208,10 +207,9 @@ const camadas = [
         atual.concorrentes.forEach((n, i) => pecas.push(linha(i + 1, n)));
         pecas.push(item(el('p', 'mt-4 text-sm font-semibold text-rose-300', `${atual.voce} não aparece na resposta.`)));
       } else {
-        pecas.push(item(el('p', 'text-[0.95rem] text-slate-200', 'A opção mais indicada na região é:')));
-        pecas.push(destaque(atual.voce));
-        atual.concorrentes.slice(0, 2).forEach((n, i) => pecas.push(linha(i + 2, n)));
-        pecas.push(item(el('p', 'mt-4 text-sm font-semibold text-emerald-300', `${atual.voce} entra na resposta, em destaque.`)));
+        pecas.push(item(el('p', 'text-[0.95rem] text-slate-200', 'Encontrei algumas opções bem avaliadas na região:')));
+        pecas.push(linha(1, atual.concorrentes[0]), linha(2, atual.concorrentes[1]), voceNaLista(3, atual.voce), linha(4, atual.concorrentes[2]));
+        pecas.push(item(el('p', 'mt-4 text-sm font-semibold text-emerald-300', `${atual.voce} passa a aparecer na resposta.`)));
       }
 
       respostaEl.append(pecas[0], lista, pecas[pecas.length - 1]);

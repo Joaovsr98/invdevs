@@ -1,7 +1,7 @@
 ---
 // Seção "Presença no Google e nas IAs" (14/11/2026, versão 3: chat animado).
 // Uma janela de chat de IA responde sozinha a pergunta de um cliente. Na aba "Hoje" o negócio do
-// visitante não aparece; na aba "Com a VN Bueno" ele passa a aparecer na lista (sem prometer posição). O visitante não sai do site.
+// visitante não aparece; na aba "Com a VN Bueno" ele aparece na lista (sem prometer posição). O visitante não sai do site.
 // É uma simulação: nomes fictícios e aviso visível. Promessa: trabalho e medição mensal, nunca "garantimos aparecer".
 // Sem atributo style no HTML (a CSP bloqueia). Dados vão num atributo data-* e o script é externo.
 import { linkWhatsApp } from '../data/site';
@@ -12,6 +12,7 @@ const cenarios = [
     rotulo: 'Oficina',
     pergunta: 'Qual é uma boa oficina mecânica em Taboão da Serra?',
     voce: 'A sua oficina',
+    pronto: 'preparada',
     concorrentes: ['Auto Center Avenida', 'Mecânica Bom Pneu', 'Oficina Dois Irmãos'],
   },
   {
@@ -19,6 +20,7 @@ const cenarios = [
     rotulo: 'Corretor',
     pergunta: 'Me indica um corretor de imóveis de confiança na zona sul de São Paulo?',
     voce: 'Você, corretor',
+    pronto: 'preparado',
     concorrentes: ['Imobiliária Central', 'Lar Novo Imóveis', 'Casa Certa Corretora'],
   },
   {
@@ -26,6 +28,7 @@ const cenarios = [
     rotulo: 'Estética',
     pergunta: 'Onde fazer harmonização facial com segurança em São Paulo?',
     voce: 'A sua clínica',
+    pronto: 'preparada',
     concorrentes: ['Clínica Bella Pele', 'Studio Face', 'Espaço Renova'],
   },
   {
@@ -33,6 +36,7 @@ const cenarios = [
     rotulo: 'Restaurante',
     pergunta: 'Qual restaurante bom para almoçar perto da Avenida Paulista?',
     voce: 'O seu restaurante',
+    pronto: 'preparado',
     concorrentes: ['Cantina da Praça', 'Sabor de Casa', 'Bistrô da Esquina'],
   },
 ];
@@ -59,14 +63,14 @@ const camadas = [
           O seu cliente pergunta para a IA. <span class="text-gradient">Ela responde com o seu nome?</span>
         </h2>
         <p class="mt-5 max-w-xl text-lg leading-relaxed text-slate-300">
-          Antes de ligar, muita gente pergunta ao ChatGPT ou ao Google qual é a melhor opção da região. A IA indica três ou quatro nomes. Quem fica fora dessa lista nem chega a ser procurado.
+          Antes de ligar, muita gente pergunta ao ChatGPT ou ao Google qual é a melhor opção da região. As IAs costumam apresentar algumas empresas relevantes para cada pesquisa. Estar preparado para essas buscas aumenta as chances de o seu negócio ser descoberto.
         </p>
         <p class="mt-4 max-w-xl text-slate-400">
           Veja ao lado a diferença entre um negócio que ninguém preparou para isso e um negócio que a gente preparou.
         </p>
 
         <div class="mt-8 flex flex-wrap items-center gap-4">
-          <a id="chat-whats" href={linkWhatsApp('Olá! Vi a parte de presença nas IAs no site da VN Bueno Digital e quero que o meu negócio apareça nas respostas.')} target="_blank" rel="noopener" class="btn-primary">Quero aparecer nas respostas</a>
+          <a id="chat-whats" href={linkWhatsApp('Olá! Vi a parte de presença nas IAs no site da VN Bueno Digital e quero melhorar a visibilidade do meu negócio.')} target="_blank" rel="noopener" class="btn-primary">Quero melhorar minha visibilidade</a>
           <a href="#orcamento" class="text-sm font-semibold text-slate-300 underline-offset-4 hover:text-white hover:underline">Ou peça um orçamento</a>
         </div>
       </div>
@@ -122,7 +126,7 @@ const camadas = [
             </div>
           </div>
         </div>
-        <p class="mt-3 text-[0.7rem] leading-relaxed text-slate-500">Simulação ilustrativa com nomes fictícios. A resposta real de cada IA muda conforme a pessoa, a cidade e o dia.</p>
+        <p class="mt-4 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-xs leading-relaxed text-slate-300">Demonstração ilustrativa, com nomes fictícios. As recomendações variam conforme a plataforma e a pesquisa. Não há garantia de posicionamento.</p>
       </div>
     </div>
 
@@ -148,7 +152,7 @@ const camadas = [
 <script>
   // Chat simulado: monta a resposta item por item. Começa sozinho quando aparece na tela
   // ("Hoje" e depois "Com a VN Bueno"); qualquer clique do visitante assume o controle.
-  type Cenario = { id: string; rotulo: string; pergunta: string; voce: string; concorrentes: string[] };
+  type Cenario = { id: string; rotulo: string; pergunta: string; voce: string; pronto: string; concorrentes: string[] };
 
   const raiz = document.getElementById('chat-ia');
   const perguntaEl = document.getElementById('chat-pergunta');
@@ -209,7 +213,7 @@ const camadas = [
       } else {
         pecas.push(item(el('p', 'text-[0.95rem] text-slate-200', 'Encontrei algumas opções bem avaliadas na região:')));
         pecas.push(linha(1, atual.concorrentes[0]), linha(2, atual.concorrentes[1]), voceNaLista(3, atual.voce), linha(4, atual.concorrentes[2]));
-        pecas.push(item(el('p', 'mt-4 text-sm font-semibold text-emerald-300', `${atual.voce} passa a aparecer na resposta.`)));
+        pecas.push(item(el('p', 'mt-4 text-sm font-semibold text-emerald-300', `${atual.voce} fica mais ${atual.pronto} para ser encontrad${atual.pronto.endsWith("a") ? "a" : "o"}.`)));
       }
 
       respostaEl.append(pecas[0], lista, pecas[pecas.length - 1]);

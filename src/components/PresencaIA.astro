@@ -1,27 +1,43 @@
 ---
-// Seção "Presença no Google e nas IAs" (14/11/2026, versão 2).
-// Em vez de só explicar, o visitante testa: escolhe o tipo de negócio e a cidade, o site monta a
-// pergunta que o cliente dele faria e abre essa pergunta no ChatGPT, Perplexity, Google ou Copilot.
-// Nada é enviado para a VN Bueno: a pergunta é montada no navegador e só sai quando a pessoa clica.
-// Promessa: trabalho e medição mensal, nunca "garantimos aparecer".
-// Sem atributo style no HTML (a CSP bloqueia). Script externo (Astro gera em /_astro/).
+// Seção "Presença no Google e nas IAs" (14/11/2026, versão 3: chat animado).
+// Uma janela de chat de IA responde sozinha a pergunta de um cliente. Na aba "Hoje" o negócio do
+// visitante não aparece; na aba "Com a VN Bueno" ele aparece em destaque. O visitante não sai do site.
+// É uma simulação: nomes fictícios e aviso visível. Promessa: trabalho e medição mensal, nunca "garantimos aparecer".
+// Sem atributo style no HTML (a CSP bloqueia). Dados vão num atributo data-* e o script é externo.
 import { linkWhatsApp } from '../data/site';
 
-const negocios = [
-  { rotulo: 'Oficina mecânica', plural: 'oficinas mecânicas' },
-  { rotulo: 'Corretor de imóveis', plural: 'corretores de imóveis' },
-  { rotulo: 'Clínica de estética', plural: 'clínicas de estética' },
-  { rotulo: 'Restaurante', plural: 'restaurantes' },
-  { rotulo: 'Advogado', plural: 'escritórios de advocacia' },
-  { rotulo: 'Dentista', plural: 'dentistas' },
+const cenarios = [
+  {
+    id: 'oficina',
+    rotulo: 'Oficina',
+    pergunta: 'Qual é uma boa oficina mecânica em Taboão da Serra?',
+    voce: 'A sua oficina',
+    concorrentes: ['Auto Center Avenida', 'Mecânica Bom Pneu', 'Oficina Dois Irmãos'],
+  },
+  {
+    id: 'corretor',
+    rotulo: 'Corretor',
+    pergunta: 'Me indica um corretor de imóveis de confiança na zona sul de São Paulo?',
+    voce: 'Você, corretor',
+    concorrentes: ['Imobiliária Central', 'Lar Novo Imóveis', 'Casa Certa Corretora'],
+  },
+  {
+    id: 'estetica',
+    rotulo: 'Estética',
+    pergunta: 'Onde fazer harmonização facial com segurança em São Paulo?',
+    voce: 'A sua clínica',
+    concorrentes: ['Clínica Bella Pele', 'Studio Face', 'Espaço Renova'],
+  },
+  {
+    id: 'restaurante',
+    rotulo: 'Restaurante',
+    pergunta: 'Qual restaurante bom para almoçar perto da Avenida Paulista?',
+    voce: 'O seu restaurante',
+    concorrentes: ['Cantina da Praça', 'Sabor de Casa', 'Bistrô da Esquina'],
+  },
 ];
 
-const ias = [
-  { id: 'chatgpt', nome: 'ChatGPT' },
-  { id: 'perplexity', nome: 'Perplexity' },
-  { id: 'google', nome: 'Google' },
-  { id: 'copilot', nome: 'Copilot' },
-];
+const inicial = cenarios[0];
 
 const camadas = [
   { titulo: 'Base técnica', texto: 'Site rápido, dados estruturados e o arquivo llms.txt, que explicam para o Google e para as IAs quem você é, o que faz e onde atende.' },
@@ -36,67 +52,77 @@ const camadas = [
   <div class="grid-bg pointer-events-none absolute inset-0 opacity-60" aria-hidden="true"></div>
 
   <div class="container-site relative">
-    <div class="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr]">
+    <div class="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
       <div>
         <p class="eyebrow">Presença no Google e nas IAs</p>
         <h2 class="mt-4 text-3xl font-bold leading-[1.1] sm:text-5xl">
-          O seu cliente já pergunta para a IA. <span class="text-gradient">Ela fala de você?</span>
+          O seu cliente pergunta para a IA. <span class="text-gradient">Ela responde com o seu nome?</span>
         </h2>
         <p class="mt-5 max-w-xl text-lg leading-relaxed text-slate-300">
-          Antes de ligar ou mandar mensagem, muita gente pergunta ao ChatGPT ou ao Google qual é a melhor opção da região. Quem não aparece nessa resposta nem entra na disputa.
+          Antes de ligar, muita gente pergunta ao ChatGPT ou ao Google qual é a melhor opção da região. A IA indica três ou quatro nomes. Quem fica fora dessa lista nem chega a ser procurado.
         </p>
         <p class="mt-4 max-w-xl text-slate-400">
-          Faça o teste ao lado. Leva dez segundos e você vê com os próprios olhos o que o seu cliente vê.
+          Veja ao lado a diferença entre um negócio que ninguém preparou para isso e um negócio que a gente preparou.
         </p>
+
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+          <a id="chat-whats" href={linkWhatsApp('Olá! Vi a parte de presença nas IAs no site da VN Bueno Digital e quero que o meu negócio apareça nas respostas.')} target="_blank" rel="noopener" class="btn-primary">Quero aparecer nas respostas</a>
+          <a href="#orcamento" class="text-sm font-semibold text-slate-300 underline-offset-4 hover:text-white hover:underline">Ou peça um orçamento</a>
+        </div>
       </div>
 
-      <!-- Teste interativo -->
-      <div id="teste-ia" class="relative rounded-3xl border border-white/10 bg-ink-900/90 p-5 shadow-[0_40px_100px_-40px_rgb(124_58_237/0.8)] sm:p-7">
-        <div class="flex items-center gap-2 border-b border-white/10 pb-4">
-          <span class="h-2.5 w-2.5 rounded-full bg-rose-400/70"></span>
-          <span class="h-2.5 w-2.5 rounded-full bg-amber-300/70"></span>
-          <span class="h-2.5 w-2.5 rounded-full bg-emerald-400/70"></span>
-          <span class="ml-2 text-xs font-medium text-slate-400">Teste de presença nas IAs</span>
-        </div>
-
-        <fieldset class="mt-5">
-          <legend class="text-sm font-semibold text-white">1. Qual é o seu negócio?</legend>
-          <div class="mt-3 flex flex-wrap gap-2">
-            {negocios.map((n, i) => (
-              <label class="cursor-pointer rounded-full border border-white/15 bg-white/[0.04] px-3.5 py-1.5 text-sm text-slate-200 transition hover:border-violet-400/60 has-[:checked]:border-transparent has-[:checked]:bg-gradient-to-r has-[:checked]:from-blue-500 has-[:checked]:to-violet-500 has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-violet-400">
-                <input type="radio" name="negocio" value={n.plural} checked={i === 0} class="sr-only" />
-                {n.rotulo}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <label class="mt-5 block">
-          <span class="text-sm font-semibold text-white">2. Em que cidade ou bairro?</span>
-          <input id="teste-cidade" type="text" autocomplete="address-level2" maxlength="60" value="São Paulo" class="mt-2 w-full rounded-xl border border-white/15 bg-ink-950 px-4 py-3 text-base text-white placeholder:text-slate-500 focus:border-violet-400 focus:outline-none focus:ring-4 focus:ring-violet-500/20 sm:text-sm" placeholder="Ex.: Taboão da Serra" />
-        </label>
-
-        <p class="mt-6 text-sm font-semibold text-white">3. A pergunta que o seu cliente faria:</p>
-        <div class="mt-3 flex justify-end">
-          <p id="teste-pergunta" class="max-w-[92%] rounded-2xl rounded-tr-sm bg-gradient-to-br from-blue-600 to-violet-600 px-4 py-3 text-[0.95rem] leading-snug text-white shadow-lg shadow-violet-900/40" aria-live="polite">
-            Quais são as melhores oficinas mecânicas em São Paulo?
-          </p>
-        </div>
-
-        <p class="mt-6 text-sm font-semibold text-white">4. Pergunte agora em:</p>
-        <div class="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-          {ias.map((ia) => (
-            <a href="#presenca" data-ia={ia.id} target="_blank" rel="noopener" class="flex items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.06] px-3 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-violet-400 hover:bg-violet-500/15">
-              {ia.nome} <span aria-hidden="true" class="text-slate-400">↗</span><span class="sr-only">(abre em nova aba)</span>
-            </a>
+      <!-- Chat simulado -->
+      <div id="chat-ia" data-cenarios={JSON.stringify(cenarios)} class="relative">
+        <div class="mb-4 flex flex-wrap gap-2" role="group" aria-label="Escolha o tipo de negócio">
+          {cenarios.map((c, i) => (
+            <button type="button" data-cenario={c.id} aria-pressed={i === 0 ? 'true' : 'false'} class="rounded-full border border-white/15 bg-white/[0.04] px-3.5 py-1.5 text-sm text-slate-200 transition hover:border-violet-400/60 aria-pressed:border-transparent aria-pressed:bg-gradient-to-r aria-pressed:from-blue-500 aria-pressed:to-violet-500 aria-pressed:text-white">
+              {c.rotulo}
+            </button>
           ))}
         </div>
 
-        <div class="mt-6 flex flex-col gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-500/[0.07] p-4 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-slate-200"><strong class="text-white">O seu negócio não apareceu?</strong> É exatamente isso que a gente resolve.</p>
-          <a id="teste-whats" href={linkWhatsApp('Olá! Fiz o teste de presença nas IAs no site da VN Bueno Digital e quero aparecer nas respostas.')} target="_blank" rel="noopener" class="btn-primary shrink-0 !px-4 !py-2.5 text-sm">Quero aparecer</a>
+        <div class="overflow-hidden rounded-3xl border border-white/10 bg-ink-900/95 shadow-[0_40px_100px_-40px_rgb(124_58_237/0.8)]">
+          <!-- barra da janela + abas -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-3.5">
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-rose-400/70"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-amber-300/70"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-emerald-400/70"></span>
+              <span class="ml-2 text-xs font-medium text-slate-400">Assistente de IA</span>
+            </div>
+            <div class="flex rounded-full border border-white/10 bg-ink-950 p-1 text-xs font-semibold" role="group" aria-label="Comparar resultado">
+              <button type="button" data-modo="hoje" aria-pressed="true" class="rounded-full px-3 py-1.5 text-slate-400 transition aria-pressed:bg-white/10 aria-pressed:text-white">Hoje</button>
+              <button type="button" data-modo="com" aria-pressed="false" class="rounded-full px-3 py-1.5 text-slate-400 transition aria-pressed:bg-gradient-to-r aria-pressed:from-blue-500 aria-pressed:to-violet-500 aria-pressed:text-white">Com a VN Bueno</button>
+            </div>
+          </div>
+
+          <div class="min-h-[23rem] p-5 sm:p-6">
+            <div class="flex justify-end">
+              <p id="chat-pergunta" class="max-w-[88%] rounded-2xl rounded-tr-sm bg-gradient-to-br from-blue-600 to-violet-600 px-4 py-3 text-[0.95rem] leading-snug text-white shadow-lg shadow-violet-900/40">{inicial.pergunta}</p>
+            </div>
+
+            <div class="mt-5 flex gap-3">
+              <span class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 text-xs font-bold text-ink-950" aria-hidden="true">IA</span>
+              <div class="min-w-0 flex-1" aria-live="polite">
+                <div id="chat-digitando" class="hidden items-center gap-1.5 py-2" aria-hidden="true">
+                  <span class="h-2 w-2 animate-pulse rounded-full bg-slate-400"></span>
+                  <span class="h-2 w-2 animate-pulse rounded-full bg-slate-400 [animation-delay:200ms]"></span>
+                  <span class="h-2 w-2 animate-pulse rounded-full bg-slate-400 [animation-delay:400ms]"></span>
+                </div>
+                <div id="chat-resposta">
+                  <p class="text-[0.95rem] text-slate-200">Encontrei algumas opções bem avaliadas na região:</p>
+                  <ol class="mt-3 space-y-2">
+                    {inicial.concorrentes.map((n, i) => (
+                      <li class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-sm text-slate-200"><span class="text-slate-500">{i + 1}.</span>{n}</li>
+                    ))}
+                  </ol>
+                  <p class="mt-4 text-sm font-semibold text-rose-300">{inicial.voce} não aparece na resposta.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <p class="mt-3 text-[0.7rem] leading-relaxed text-slate-500">A pergunta é montada aqui no seu navegador e só é enviada para a IA que você escolher. Nada fica salvo com a gente.</p>
+        <p class="mt-3 text-[0.7rem] leading-relaxed text-slate-500">Simulação ilustrativa com nomes fictícios. A resposta real de cada IA muda conforme a pessoa, a cidade e o dia.</p>
       </div>
     </div>
 
@@ -113,44 +139,122 @@ const camadas = [
         ))}
       </ol>
       <p class="mt-6 max-w-3xl text-xs leading-relaxed text-slate-500">
-        Nenhuma empresa consegue garantir que uma IA vai citar o seu negócio, porque a resposta muda conforme a pessoa, a cidade e o dia. O que entregamos é o trabalho feito e a medição todo mês, com as mesmas perguntas, para você acompanhar a evolução.
+        Nenhuma empresa consegue garantir que uma IA vai citar o seu negócio. O que entregamos é o trabalho feito e a medição todo mês, com as mesmas perguntas, para você acompanhar a evolução.
       </p>
     </div>
   </div>
 </section>
 
 <script>
-  // Monta a pergunta e os links das IAs conforme o negócio e a cidade escolhidos.
-  const caixa = document.getElementById('teste-ia');
-  const cidadeEl = document.getElementById('teste-cidade') as HTMLInputElement | null;
-  const perguntaEl = document.getElementById('teste-pergunta');
-  const whats = document.getElementById('teste-whats') as HTMLAnchorElement | null;
+  // Chat simulado: monta a resposta item por item. Começa sozinho quando aparece na tela
+  // ("Hoje" e depois "Com a VN Bueno"); qualquer clique do visitante assume o controle.
+  type Cenario = { id: string; rotulo: string; pergunta: string; voce: string; concorrentes: string[] };
 
-  const urls: Record<string, (q: string) => string> = {
-    chatgpt: (q) => `https://chatgpt.com/?q=${encodeURIComponent(q)}&hints=search`,
-    perplexity: (q) => `https://www.perplexity.ai/search?q=${encodeURIComponent(q)}`,
-    google: (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
-    copilot: (q) => `https://www.bing.com/copilotsearch?q=${encodeURIComponent(q)}`,
-  };
+  const raiz = document.getElementById('chat-ia');
+  const perguntaEl = document.getElementById('chat-pergunta');
+  const respostaEl = document.getElementById('chat-resposta');
+  const digitandoEl = document.getElementById('chat-digitando');
 
-  const atualizar = () => {
-    if (!caixa || !perguntaEl) return;
-    const negocio = (caixa.querySelector('input[name="negocio"]:checked') as HTMLInputElement | null)?.value ?? 'empresas';
-    const cidade = (cidadeEl?.value || '').trim().replace(/\s+/g, ' ') || 'minha cidade';
-    const pergunta = `Quais são as melhores ${negocio} em ${cidade}?`;
-    perguntaEl.textContent = pergunta;
-    caixa.querySelectorAll<HTMLAnchorElement>('[data-ia]').forEach((a) => {
-      const montar = urls[a.dataset.ia ?? ''];
-      if (montar) a.href = montar(pergunta);
-    });
-    if (whats) {
-      const numero = new URL(whats.href).pathname.replace('/', '');
-      const msg = `Olá! Fiz o teste de presença nas IAs no site da VN Bueno Digital com a pergunta "${pergunta}" e quero aparecer nas respostas.`;
-      whats.href = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
-    }
-  };
+  if (raiz && perguntaEl && respostaEl && digitandoEl) {
+    const cenarios: Cenario[] = JSON.parse(raiz.dataset.cenarios || '[]');
+    const semMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let atual = cenarios[0];
+    let modo: 'hoje' | 'com' = 'hoje';
+    let rodada = 0; // cancela animações antigas
+    let automatico = true;
 
-  caixa?.addEventListener('change', atualizar);
-  cidadeEl?.addEventListener('input', atualizar);
-  atualizar();
+    const espera = (ms: number) => new Promise((r) => setTimeout(r, semMovimento ? 0 : ms));
+
+    const el = (tag: string, classe: string, texto?: string) => {
+      const e = document.createElement(tag);
+      e.className = classe;
+      if (texto !== undefined) e.textContent = texto;
+      return e;
+    };
+
+    const ESCONDIDO = ['opacity-0', 'translate-y-2'];
+    const item = (conteudo: HTMLElement) => {
+      conteudo.classList.add('transition', 'duration-500', ...(semMovimento ? [] : ESCONDIDO));
+      return conteudo;
+    };
+
+    const linha = (n: number, nome: string) => {
+      const li = el('li', 'flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-sm text-slate-200');
+      li.append(el('span', 'text-slate-500', `${n}.`), document.createTextNode(nome));
+      return item(li);
+    };
+
+    const destaque = (nome: string) => {
+      const li = el('li', 'rounded-xl border border-violet-400/60 bg-gradient-to-r from-blue-500/20 to-violet-500/20 px-3.5 py-3 text-sm text-white shadow-[0_0_30px_-8px_rgb(139_92_246/0.8)]');
+      const topo = el('div', 'flex items-center gap-3');
+      topo.append(el('span', 'text-violet-300', '1.'), el('strong', 'font-semibold', nome), el('span', 'ml-auto rounded-full bg-emerald-400/15 px-2 py-0.5 text-[0.7rem] font-semibold text-emerald-300', 'Recomendado'));
+      li.append(topo, el('p', 'mt-1.5 pl-6 text-xs leading-relaxed text-slate-300', 'Site com informações claras, perfil no Google completo e boas avaliações de clientes.'));
+      return item(li);
+    };
+
+    const mostrar = async () => {
+      const minha = ++rodada;
+      perguntaEl.textContent = atual.pergunta;
+      respostaEl.replaceChildren();
+      digitandoEl.classList.replace('hidden', 'flex');
+      await espera(900);
+      if (minha !== rodada) return;
+      digitandoEl.classList.replace('flex', 'hidden');
+
+      const pecas: HTMLElement[] = [];
+      const lista = el('ol', 'mt-3 space-y-2');
+      if (modo === 'hoje') {
+        pecas.push(item(el('p', 'text-[0.95rem] text-slate-200', 'Encontrei algumas opções bem avaliadas na região:')));
+        atual.concorrentes.forEach((n, i) => pecas.push(linha(i + 1, n)));
+        pecas.push(item(el('p', 'mt-4 text-sm font-semibold text-rose-300', `${atual.voce} não aparece na resposta.`)));
+      } else {
+        pecas.push(item(el('p', 'text-[0.95rem] text-slate-200', 'A opção mais indicada na região é:')));
+        pecas.push(destaque(atual.voce));
+        atual.concorrentes.slice(0, 2).forEach((n, i) => pecas.push(linha(i + 2, n)));
+        pecas.push(item(el('p', 'mt-4 text-sm font-semibold text-emerald-300', `${atual.voce} entra na resposta, em destaque.`)));
+      }
+
+      respostaEl.append(pecas[0], lista, pecas[pecas.length - 1]);
+      for (const p of pecas) {
+        if (p.tagName === 'LI') lista.append(p);
+        void p.offsetWidth; // garante a transição
+        p.classList.remove(...ESCONDIDO);
+        await espera(380);
+        if (minha !== rodada) return;
+      }
+      if (automatico && modo === 'hoje') {
+        await espera(2200);
+        if (minha === rodada && automatico) trocarModo('com');
+      }
+    };
+
+    const marcar = (seletor: string, ativo: string, atributo: string) => {
+      raiz.querySelectorAll<HTMLButtonElement>(seletor).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[atributo] === ativo)));
+    };
+
+    const trocarModo = (m: 'hoje' | 'com') => {
+      modo = m;
+      marcar('[data-modo]', m, 'modo');
+      mostrar();
+    };
+
+    raiz.querySelectorAll<HTMLButtonElement>('[data-modo]').forEach((b) =>
+      b.addEventListener('click', () => { automatico = false; trocarModo(b.dataset.modo as 'hoje' | 'com'); }),
+    );
+    raiz.querySelectorAll<HTMLButtonElement>('[data-cenario]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const c = cenarios.find((x) => x.id === b.dataset.cenario);
+        if (!c) return;
+        atual = c;
+        marcar('[data-cenario]', c.id, 'cenario');
+        automatico = true;
+        trocarModo('hoje');
+      }),
+    );
+
+    // começa quando o chat aparece na tela
+    new IntersectionObserver((entradas, obs) => {
+      if (entradas.some((e) => e.isIntersecting)) { obs.disconnect(); mostrar(); }
+    }, { threshold: 0.4 }).observe(raiz);
+  }
 </script>
